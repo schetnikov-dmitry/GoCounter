@@ -111,6 +111,7 @@ func main () {
 	keys := make(chan os.Signal, 1)
 	signal.Notify(keys, os.Interrupt)
 
+	// читаем со стандартного входа
 	go func(chan_balancer chan string) {
 		err:= read_stdin(chan_balancer)
 		if (err != nil) && (err != io.EOF) {
