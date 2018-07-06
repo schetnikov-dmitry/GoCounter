@@ -1,17 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"container/heap"
-	"sync"
+	"flag"
+	"io"
 	"log"
-	"strconv"
+	"net/http"
 	"os"
 	"os/signal"
-	"bufio"
+	"strconv"
 	"strings"
-	"io"
-	"flag"
-	"net/http"
 )
 
 const (
@@ -144,7 +143,6 @@ type Worker struct {
 	data            chan string	   // канал для заданий
 	pending		int                // кол-во оставшихся задач
 	index           int                // позиция в куче
-	wg		*sync.WaitGroup    // указатель на группу ожидания
 	result          int                // результат выполнения
 }
 
@@ -152,9 +150,7 @@ type Worker struct {
 func (worker *Worker) work(done chan *Worker) {
 	for {
 		data := <-worker.data  	// читаем следующее задание
-		worker.wg.Add(1)     	// инкриминируем счетчик группы ожидания
 		worker.result = handle_data(data, worker.name)      // обработка задания
-		worker.wg.Done()     	// сигнализируем группе ожидания что закончили
 		done <- worker       	// показываем что завершили работу
 	}
 }
@@ -205,7 +201,6 @@ type Balancer struct {
 	datas            chan string        // Канал для получения новых заданий
 	flowctrl         chan bool          // Канал для Flow Control
 	Queue            int                // Количество незавершенных заданий переданных рабочим
-	wg               *sync.WaitGroup    // Группа ожидания для рабочих
 	Count_workers    int                // количество рабочих
 	Count_workerscap int                // размер очереди каждого рабочего
 }
@@ -216,7 +211,6 @@ func (balancer *Balancer) init(WORKERS int, WORKERSCAP int, in chan string) {
 	balancer.datas = make(chan string)
 	balancer.flowctrl = make(chan bool)
 	balancer.done = make(chan *Worker)
-	balancer.wg = new(sync.WaitGroup)
 
 	balancer.Count_workers = WORKERS
 	balancer.Count_workerscap = WORKERSCAP
@@ -240,7 +234,6 @@ func (balancer *Balancer) init_worker(number int) {
 		data:    make(chan string, balancer.Count_workerscap),
 		index:   0,
 		pending: 0,
-		wg:      balancer.wg,
 	}
 
 	go worker.work(balancer.done)     //запускаем рабочего
