@@ -206,7 +206,11 @@ type Balancer struct {
 	Count_workerscap int                // размер очереди каждого рабочего
 }
 
-// Инициализируем балансировщик. Аргументы: количество работников, количество задач для одного работника, канал по которому приходят задания
+// Инициализируем балансировщик.
+// Аргументы:
+// количество работников,
+// количество задач для одного работника,
+// канал по которому приходят задания
 func (balancer *Balancer) init(WORKERS int, WORKERSCAP int, in chan string) {
 
 	balancer.datas = make(chan string)
@@ -228,7 +232,8 @@ func (balancer *Balancer) init(WORKERS int, WORKERSCAP int, in chan string) {
 	heap.Init(&balancer.pool)
 }
 
-//Рабочая функция балансировщика получает аргументом канал уведомлений от главного цикла
+// Инициализация рабочего.
+// Аргумент - номер рабочего
 func (balancer *Balancer) init_worker(number int) {
 	worker := &Worker{
 		name:    "worker" + strconv.Itoa(number),
@@ -241,7 +246,8 @@ func (balancer *Balancer) init_worker(number int) {
 	heap.Push(&balancer.pool, worker) //и заталкиваем его в кучу
 }
 
-//Рабочая функция балансировщика. Аргумент канал уведомления об окончании работы
+//Рабочая функция балансировщика
+// Аргумент канал уведомления об окончании работы
 func (balancer *Balancer) balance(quit chan int) {
 
 	noMoreLine := false // Флаг завершения, поднимаем когда кончились задания
