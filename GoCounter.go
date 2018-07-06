@@ -98,6 +98,7 @@ func main () {
 	// а вдруг захотим чего-то другого?
 	flag.IntVar(&WORKERS, "workers", WORKERS, "number of workers")
 	flag.IntVar(&WORKERSCAP, "capacity", WORKERSCAP, "capacity of workers")
+	flag.Parse()
 
 	// Подготовим балансировщик и необходимые ему каналы
 	chan_balancer := make(chan string)
